@@ -76,7 +76,7 @@ fqprime1 = int(q*fqprime,x,0,L);
 fqprime1 = subs(fqprime1,L,l_);
 
 r = k*(T'*d) - T * fqprime1;
-r = double(r)
+r = double(r);
 
 
 % % Distributed load vector
