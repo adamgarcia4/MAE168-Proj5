@@ -3,16 +3,15 @@ clear; close all; clc;
 
 %% Inputs
 %(EA, EI, kGA, CNX, EQN, X, displacements,q);
-EA = 60*10^6;
-EI = 680*10^6;
-kGA = 11603*6*1;
-number = 1000;
+EA = 60*10^6*ones(1,10)';
+EI = 680*10^6*ones(1,10)';
+kGA = 11603*6*1*ones(1,10)';
+number = 10;
 % EI/kGAL^2 vary this dimensionless number.
 x = ones(number,2);
-Q = [0;-100; 0];
-q = 0;
+q = zeros(10,1);
 numElements = 10;
-numNodes = 11;
+numNodes = numElements+1;
 
 %% Generate EQN
 EQN = zeros(3,numNodes);
@@ -32,36 +31,81 @@ end
 
 %% Generate CNX
 
-CNX = zeros(numElements,2);
+CNX = zeros(2,numElements);
 counter = 1;
 for i = 1:numElements
-   CNX(i,1) = counter;
-   CNX(i,2) = counter + 1;
+   CNX(1,i) = counter;
+   CNX(2,i) = counter + 1;
    counter = counter + 1;    
 end
+% CNX = transpose(CNX);
 
 %% Generate Q
 
-Q = zeros(1,numNodes);
-Q(1,11) = -100;
+Q = zeros(30,1);
+Q(29,1) = -100;
 
 %% Generate X
 
-X = zeros(numNodes,3);
-l = 
-for i = 1:numNodes
-   X(i,1) =  
+syms L Lcount X
+Lcount=0;
+for i=1:numNodes 
+        for j=1:3
+            if j==2 || j ==3
+                X(j,i)=0;
+            else
+                X(j,i)= Lcount;
+                Lcount = Lcount +L/numElements;
+            end
+        end
+end
+Xunm = X;
+clear X;
+
+%% Run through dimensionless params
+
+p1 = zeros(2,number);
+for iter = 1:number
+    if iter == 1 || iter==number
+        l = sqrt(EI(1)/(kGA(1)*iter))
+    else
+        l = sqrt(EI(1)/(kGA(1)*iter));
+    end
+    
+    X = subs(Xunm,L,l);
+    X = double(X);
+     dt = zeros(size(EQN));
+     [Wt, Rt, Kt] = beamTimoshenkoAssembly(EA,EI,kGA,CNX, EQN,X,dt,q);
+     dt = Kt\(Q);
+     
+     
+     p1(1,iter) = iter;
+     p1(2,iter) = dt(29);
+end
+
+p2 = zeros(2,number);
+for iter = 1:number
+    
+    l = sqrt(EI(1)/(kGA(1)*iter));
+    X = subs(Xunm,L,l);
+    X = double(X);
+    
+    d = zeros(size(EQN));
+    [W, R, K]= beamAssembly( EA, EI, CNX, EQN, X, d, q);
+    d = K\Q;
+    
+     p2(1,iter) = iter;
+     p2(2,iter) = d(29);
     
     
 end
 
-%% Generate EQN and CNX
-
-%(X, displacements);
-%(EA, EI, kGA, CNX, EQN, X, displacements,q);
 
 
-
+figure(1)
+semilogx(p1(1,:),p1(2,:))
+hold on
+semilogx(p2(1,:),p2(2,:))
 
 
 

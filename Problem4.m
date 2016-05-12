@@ -32,6 +32,8 @@ CNX;
 
 %% Generate EQN
 
+
+
 %% Generate X
 ThetaArray = linspace(0,theta_total*pi/180,n_nodes);
 

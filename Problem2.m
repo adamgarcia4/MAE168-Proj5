@@ -11,7 +11,7 @@ clc;
 EA = 60*10^6;
 EI = 680*10^6;
 kGA = 11603*6*1;
-number = 1000;
+number = 10;
 % EI/kGAL^2 vary this dimensionless number.
 x = ones(number,2);
 Q = [0;-100; 0];
