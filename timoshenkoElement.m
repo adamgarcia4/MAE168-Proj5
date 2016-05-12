@@ -1,16 +1,20 @@
-function [w, r, k] = timoshenkoElement(EA,EI, kGA, X, d, q)
+function [w, r, k] = timoshenkoElement(EA,EI, kGA, x, d, q)
 
 %% Preprocessor Commands
-clear all;
-clc;
+% clear all;
+% clc;
+
+% X = [0 1 2 3 4 5];
+% d = [0 1 2 3 4 5]';
+% EA = 1;
+% EI = 2;
+% kGA = 4;
+% q = 1;
 
 %% Find Transformation Matrix
 
-X = [0 1 2 3 4 5];
-d = [0 1 2 3 4 5]';
-q = 1;
-dx_ = X(4) - X(1);
-dy_ = X(5) - X(2);
+dx_ = x(4) - x(1);
+dy_ = x(5) - x(2);
 l_ = sqrt(dx_^2 + dy_^2);
 
 c = dx_/l_;
@@ -59,10 +63,11 @@ k6 = [0 k6(1:2) 0 k6(3:4)];
 k = [k1;k2;k3;k4;k5;k6];
 
 %Numerical Substitutions
-k = subs(k,EA_,5);
-k = subs(k,EI_,3);
-k = subs(k,L,1);
-k = subs(k,kGA_,7)
+k = subs(k,EA_,EA);
+k = subs(k,EI_,EI);
+k = subs(k,L,l_);
+k = subs(k,kGA_,kGA);
+k = double(T*k*transpose(T));
 %pretty(k)
 %% Residual Force
 
@@ -70,7 +75,8 @@ fqprime = transpose([0 N1 0 0 N2 0]);
 fqprime1 = int(q*fqprime,x,0,L);
 fqprime1 = subs(fqprime1,L,l_);
 
-r = k*(T'*d) - T * fqprime1
+r = k*(T'*d) - T * fqprime1;
+r = double(r)
 
 
 % % Distributed load vector
@@ -97,12 +103,13 @@ w =  EI_*(thetaprime)^2 + kGA_*(wprime - theta)^2;
 w1 = 1/2*int(w,x,0,L);
 w2 = int(q*w_,x,0,L);
 
-w1 = subs(w1,EI_,3);
-w1 = subs(w1,L,1);
-w1 = subs(w1,kGA_,7);
+w1 = subs(w1,EI_,EI);
+w1 = subs(w1,L,l_);
+w1 = subs(w1,kGA_,kGA);
 
-w2 = subs(w2,L,1);
+w2 = subs(w2,L,l_);
 
-w = w1-w2
+w = w1-w2;
+w = double(w);
 
 end

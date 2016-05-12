@@ -35,15 +35,15 @@ EA = E.*A;
 
 displacements = zeros(size(EQN));
 
-[W, R, K] = beamAssembly(EA, EI, kGA, CNX, EQN, X, displacements,q);
-W
+[W, R, K] = beamTimoshenkoAssembly(EA, EI, kGA, CNX, EQN, X, displacements,q);
+% W
 R
 K
  
 Q = [0; 0; 0];
 
 D = K\(Q-R);
-D
+% D
 
 
 
