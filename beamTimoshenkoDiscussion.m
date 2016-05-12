@@ -13,32 +13,35 @@ L = 144;
 X = [0   0  0;
      L   0  0;
      L+L/sqrt(2) -L/sqrt(2) 0]';
- %Node 1 2 3
-EQN = [0 1 0; %X
-       0 2 0; %Y
-       0 3 0]; %Theta
+ 
+EQN = [0 1 0;
+       0 2 0;
+       0 3 0];
    
-CNX = [1 2; % Element 1
-       2 3]'; %Element 2
+CNX = [1 2;
+       2 3]';
    
 E = [10*10^6; 10*10^6];
 % I = [67.78; 67.78]; % Course reader states these values but rounds in solution
 I = [68;68];
 % A = [5.972; 5.972];
 A = [6;6];
-q = [-100;0]; %Element 1, Element 2 distributed loads
+q = [-100;0];
+
+kGA = [1; 1];
 
 EI = E.*I;
 EA = E.*A;
 
 displacements = zeros(size(EQN));
 
-[W, R, K] = beamAssembly(EA, EI, CNX, EQN, X, displacements,q);
+[W, R, K] = beamAssembly(EA, EI, kGA, CNX, EQN, X, displacements,q);
 W
 R
 K
  
-Q = [0; 0; 0]; %External loading at elements
+Q = [0; 0; 0];
+
 D = K\(Q-R);
 D
 
