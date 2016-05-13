@@ -11,33 +11,34 @@ end
 
 %% Parameters
 theta_total=90;
-n_el = 10;
-number = n_el;
-n_nodes = n_el+1;
 radius = 1;
-EA_const = 1e9;
-EI_const = 1e9;
 
 %% Prepadding for Efficiency
 % X contains all node element positions in (x,y,z) format
-EA = 60*10^6*ones(1,10)';
-EI = 680*10^6*ones(1,10)';
-kGA = 11603*6*1*ones(1,10)';
-q = zeros(10,1);
 
-Q = zeros(30,1);
-Q(29,1) = -100;
+n_el_arr = 2:10:50;
 
+
+%% Start For Loop
+for iter = 1:size(n_el_arr,2)
+n_el = n_el_arr(iter); 
+number = n_el;
+n_nodes = n_el +1;
+EA = 60*10^6*ones(1,n_el)';
+EI = 680*10^6*ones(1,n_el)';
+kGA = 11603*6*1*ones(1,n_el)';
+
+
+q = zeros(n_el,1);
+Q = zeros(3*n_el,1);
+Q(3*n_el-1,1) = -100;
 X = zeros(n_nodes,3);
 CNX = zeros(2,n_el);
 
-
-
 %% Generate CNX
-
-for iter = 1:n_el
-    CNX(1,iter) = iter;
-    CNX(2,iter) = iter+1;
+for i = 1:n_el
+    CNX(1,i) = i;
+    CNX(2,i) = i+1;
 end
 CNX;
 
@@ -58,55 +59,49 @@ for i = 1:n_nodes
    end
 end
 
-
 %% Generate X
+
 ThetaArray = linspace(0,theta_total*pi/180,n_nodes);
 
-for iter = 1:n_nodes
-    X(iter, 1) = -radius*cos(ThetaArray(iter));
-    X(iter, 2) = radius*sin(ThetaArray(iter));
-    X(iter, 3) = pi/2-ThetaArray(iter);
+for ind = 1:n_nodes
+    X(ind, 1) = -radius*cos(ThetaArray(ind));
+    X(ind, 2) = radius*sin(ThetaArray(ind));
+    X(ind, 3) = pi/2-ThetaArray(ind);
 end
 X = transpose(X);
 
-%% Running loops
-p1 = zeros(2,number);
-for iter = 1:number
-    if iter == 1 || iter==number
-        l = sqrt(EI(1)/(kGA(1)*iter))
-    else
-        l = sqrt(EI(1)/(kGA(1)*iter));
-    end
-    
-     dt = zeros(size(EQN));
-     [Wt, Rt, Kt] = beamTimoshenkoAssembly(EA,EI,kGA,CNX, EQN,X,dt,q);
-     dt = Kt\(Q);
-     
-     
-     p1(1,iter) = iter;
-     p1(2,iter) = dt(29);
+%% Run Loops
+
+l = sqrt((X(1,1)-X(2,1))^2+(X(1,2)-X(2,2))^2);
+d = zeros(size(EQN));
+[Wt, Rt, Kt] = beamTimoshenkoAssembly(EA,EI,kGA,CNX, EQN,X,d,q);
+d = Kt\(Q);
+p1(1,iter) = l; %plotting against element length
+p1(2,iter) = d(3*n_el-1); %Tip Transverse Deflection
+p1(3,iter) = d(3*n_el); %Tip Rotation
 end
 
-p2 = zeros(2,number);
-for iter = 1:number
-    
-    l = sqrt(EI(1)/(kGA(1)*iter));
-    
-    d = zeros(size(EQN));
-    [W, R, K]= beamAssembly( EA, EI, CNX, EQN, X, d, q);
-    d = K\Q;
-    
-     p2(1,iter) = iter;
-     p2(2,iter) = d(29);
-    
-    
-end
+%% Running loops
+
+
+% p2 = zeros(2,number);
+% for iter = 1:number
+%     
+%     l = sqrt(EI(1)/(kGA(1)*iter));
+%     
+%     d = zeros(size(EQN));
+%     [W, R, K]= beamAssembly( EA, EI, CNX, EQN, X, d, q);
+%     d = K\Q;
+%     
+%      p2(1,iter) = iter;
+%      p2(2,iter) = d(29);
+%     
+%     
+% end
 
 %% Plotting
 figure(5)
-semilogx(fliplr(p1(1,:)),p1(2,:)+.04,'LineWidth',2)
-hold on
-semilogx(fliplr(p2(1,:)),p2(2,:),'r','LineWidth',2)
+plot(fliplr(p1(1,:)),p1(2,:),'LineWidth',2)
 xlabel('log(L/h)','FontWeight', 'bold', 'FontSize', 16, 'FontName', 'Times New Roman')
 ylabel('Deflection','FontWeight', 'bold', 'FontSize', 16, 'FontName', 'Times New Roman')
 title('Tip Deflection on Curved Cantilevered Beam 10-element', 'FontSize', 20, 'FontName', 'Times New Roman');
@@ -114,14 +109,14 @@ title('Tip Deflection on Curved Cantilevered Beam 10-element', 'FontSize', 20, '
 set(gca, 'FontSize', 16);
 print('-dpng',[pwd,'\plots\Figure_5 ','Tip Deflection on Curved Cantilevered Beam 10-element','.png']);
 
-figure(6)
-diff = -fliplr(p1(2,:)) + fliplr(p2(2,:))
-semilogx((p1(1,:)),diff,'LineWidth',2)
-xlabel('log(L/h)','FontWeight', 'bold', 'FontSize', 16, 'FontName', 'Times New Roman')
-ylabel('Deflection Difference','FontWeight', 'bold', 'FontSize', 16, 'FontName', 'Times New Roman')
-title('Tip Deflection Difference on Curved Cantilevered Beam 10-element', 'FontSize', 20, 'FontName', 'Times New Roman');
-%grid on;
-set(gca, 'FontSize', 16);
-print('-dpng',[pwd,'\plots\Figure_6 ','Tip Deflection Difference on Curved Cantilevered Beam 10-element','.png']);
-
-
+% figure(6)
+% diff = -fliplr(p1(2,:)) + fliplr(p2(2,:))
+% semilogx((p1(1,:)),diff,'LineWidth',2)
+% xlabel('log(L/h)','FontWeight', 'bold', 'FontSize', 16, 'FontName', 'Times New Roman')
+% ylabel('Deflection Difference','FontWeight', 'bold', 'FontSize', 16, 'FontName', 'Times New Roman')
+% title('Tip Deflection Difference on Curved Cantilevered Beam 10-element', 'FontSize', 20, 'FontName', 'Times New Roman');
+% %grid on;
+% set(gca, 'FontSize', 16);
+% print('-dpng',[pwd,'\plots\Figure_6 ','Tip Deflection Difference on Curved Cantilevered Beam 10-element','.png']);
+% 
+% 
