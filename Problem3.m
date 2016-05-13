@@ -1,6 +1,13 @@
 %% Preprocessor Commands
 clear; close all; clc;
 
+exist([pwd,'\plots'],'dir');% check whether a folder named 'plots' exists
+% in the working directory; returns the value 7
+% if such a directory exists, 0 otherwise
+if ans == 0; % if the folder 'plots' does not exist in the working directory
+mkdir('plots') % create a folder in which to store images
+end
+
 %% Inputs
 %(EA, EI, kGA, CNX, EQN, X, displacements,q);
 EA = 60*10^6*ones(1,10)';
@@ -100,70 +107,23 @@ for iter = 1:number
     
 end
 
-
-
-figure(1)
-semilogx(p1(1,:),p1(2,:))
+figure(3)
+semilogx(fliplr(p1(1,:)),p1(2,:)+.04,'LineWidth',2)
 hold on
-semilogx(p2(1,:),p2(2,:))
+semilogx(fliplr(p2(1,:)),p2(2,:),'r','LineWidth',2)
+xlabel('log(L/h)','FontWeight', 'bold', 'FontSize', 16, 'FontName', 'Times New Roman')
+ylabel('Deflection','FontWeight', 'bold', 'FontSize', 16, 'FontName', 'Times New Roman')
+title('Tip Deflection on Cantilevered Beam 10-element', 'FontSize', 20, 'FontName', 'Times New Roman');
+%grid on;
+set(gca, 'FontSize', 16);
+print('-dpng',[pwd,'\plots\Figure_3 ','Tip Deflection on Cantilevered Beam 10-element','.png']);
 
-
-
-
-
-
-
-
-
-
-
-% 
-% % Example from section 4-7
-% L = 144;
-% X = [0   0  0;
-%      L   0  0;
-%      L+L/sqrt(2) -L/sqrt(2) 0]';
-%  
-% EQN = [0 1 0;
-%        0 2 0;
-%        0 3 0];
-%    
-% CNX = [1 2;
-%        2 3]';
-%    
-% E = [10*10^6; 10*10^6];
-% % I = [67.78; 67.78]; % Course reader states these values but rounds in solution
-% I = [68;68];
-% % A = [5.972; 5.972];
-% A = [6;6];
-% q = [-100;0];
-% 
-% kGA = [1; 1];
-% 
-% EI = E.*I;
-% EA = E.*A;
-% 
-% displacements = zeros(size(EQN));
-% 
-% [W, R, K] = beamTimoshenkoAssembly(EA, EI, kGA, CNX, EQN, X, displacements,q);
-% % W
-% R
-% K
-%  
-% Q = [0; 0; 0];
-% 
-% D = K\(Q-R);
-% % D
-% 
-% 
-% 
-% 
-% 
-% 
-% 
-% 
-% 
-% 
-% 
-% 
-% 
+figure(4)
+diff = -fliplr(p1(2,:)) + fliplr(p2(2,:))
+semilogx((p1(1,:)),diff,'LineWidth',2)
+xlabel('log(L/h)','FontWeight', 'bold', 'FontSize', 16, 'FontName', 'Times New Roman')
+ylabel('Deflection Difference','FontWeight', 'bold', 'FontSize', 16, 'FontName', 'Times New Roman')
+title('Tip Deflection Difference on Cantilevered Beam 10-element', 'FontSize', 20, 'FontName', 'Times New Roman');
+%grid on;
+set(gca, 'FontSize', 16);
+print('-dpng',[pwd,'\plots\Figure_4 ','Tip Deflection Difference on Cantilevered Beam 10-element','.png']);
